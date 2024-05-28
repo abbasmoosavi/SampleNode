@@ -4,6 +4,9 @@ const fs = require('fs');
 const app = express();
 const port = 3000;
 
+// Maximum chunk size in bytes (e.g., 1MB)
+const MAX_CHUNK_SIZE = 1024 * 1024; // 1MB
+
 // Serve video file
 app.get('/videos/:filename', (req, res) => {
     const filename = req.params.filename; // Capture the route parameter
@@ -24,7 +27,7 @@ app.get('/videos/:filename', (req, res) => {
         if (range) {
             const parts = range.replace(/bytes=/, "").split("-");
             const start = parseInt(parts[0], 10);
-            const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+            const end = parts[1] ? parseInt(parts[1], 10) : Math.min(start + MAX_CHUNK_SIZE - 1, fileSize - 1);
 
             if (start >= fileSize) {
                 res.status(416).send('Requested range not satisfiable\n' + start + ' >= ' + fileSize);
